@@ -1,22 +1,22 @@
 package com.github.elmsuf;
 
 import aima.core.probability.CategoricalDistribution;
+import aima.core.probability.Factor;
 import aima.core.probability.RandomVariable;
 import aima.core.probability.bayes.BayesInference;
 import aima.core.probability.bayes.BayesianNetwork;
 import aima.core.probability.bayes.Node;
 import aima.core.probability.bayes.exact.EliminationAsk;
 import aima.core.probability.bayes.exact.EnumerationAsk;
+import aima.core.probability.bayes.impl.BayesNet;
 import aima.core.probability.proposition.AssignmentProposition;
 import aima.core.probability.util.RandVar;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class QueryOptimizer {
-    private final BayesianNetwork bn;
-    private BayesInference bi;
+    private BayesianNetwork bn;
     private Map<String, RandomVariable> map = new HashMap<>();
 
     public QueryOptimizer(BayesianNetwork bn) {
@@ -24,12 +24,41 @@ public class QueryOptimizer {
         bn.getVariablesInTopologicalOrder().forEach(el -> this.map.put(el.getName(), el));
     }
 
-    public void executeSimpleQuery(RandomVariable[] vars, AssignmentProposition[] query) {
-        this.bi = new EnumerationAsk();
-        CategoricalDistribution res = this.bi.ask(vars, query, this.bn);
-        System.out.println(res);
+    public void executeQuery(BayesInference bi, RandomVariable[] vars, AssignmentProposition[] query) {
+        long startTime = System.nanoTime();
+        CategoricalDistribution res = bi.ask(vars, query, this.bn);
+        long endTime = System.nanoTime();
+//        System.out.println(res);
+        System.out.println(bi.getClass().getSimpleName() + " EXEC TOOK: " + (endTime - startTime));
     }
 
+
+    public void executeQueryWithVariableElimination(BayesInference bi, RandomVariable[] vars, AssignmentProposition[] query) {
+        var network = this.eliminateVariables(vars, query);
+        long startTime = System.nanoTime();
+        CategoricalDistribution res = bi.ask(vars, query, network);
+        long endTime = System.nanoTime();
+//        System.out.println(res);
+        System.out.println(bi.getClass().getSimpleName() + " EXEC TOOK: " + (endTime - startTime));
+    }
+
+    private BayesianNetwork eliminateVariables(RandomVariable[] vars, AssignmentProposition[] query) {
+        var relevant = new HashSet<Node>();
+        Arrays.stream(query).map(el -> el.getTermVariable().getName()).forEach(el -> relevant.addAll(getNode(el).getParents()));
+        Arrays.stream(vars).forEach(el -> relevant.addAll(getNode(el).getParents()));
+        Node[] nodes = this.bn.getVariablesInTopologicalOrder().stream()
+                .map(this::getNode)
+                .filter(el -> relevant.contains(el))
+                .toArray(size -> new Node[size]);
+        return new BayesNet(nodes);
+//        long startTime = System.nanoTime();
+//        long endTime = System.nanoTime();
+//        System.out.println("VARIABLE ELIMINATION TOOK: " + (endTime - startTime));
+//        System.out.println("-Size" + this.bn.getVariablesInTopologicalOrder().size());
+//        System.out.println("+Size" + nodes.length);
+    }
+
+    //Helper Methods
     public Node getNode(String node) {
         return this.getNode(this.map.get(node));
     }
@@ -38,20 +67,4 @@ public class QueryOptimizer {
         return this.bn.getNode(var);
     }
 
-
-    public void optimizeForQuery(List<RandomVariable> vars, List<AssignmentProposition> ass) {
-        //var q1 = vars.get(0);
-        ass.forEach(el -> {
-            var tmp = getNode(el.getTermVariable());
-            System.out.println("-----getChildren");
-            System.out.println(tmp.getChildren());
-            System.out.println("-----getCPD");
-            System.out.println(tmp.getCPD());
-            System.out.println("-----getParents");
-            System.out.println(tmp.getParents());
-            System.out.println("-----");
-
-        });
-
-    }
 }
