@@ -52,4 +52,7 @@ public interface BayesianNetwork {
 	 *         Network.
 	 */
 	Node getNode(RandomVariable rv);
+
+	boolean removeNode(RandomVariable rv);
+	boolean removeNode(Node node);
 }

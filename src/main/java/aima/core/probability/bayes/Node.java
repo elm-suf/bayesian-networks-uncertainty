@@ -14,51 +14,51 @@ import aima.core.probability.RandomVariable;
  * conditional probability distribution P(X<sub>i</sub> |
  * Parents(X<sub>i</sub>)) that quantifies the effect of the parents on the
  * node. <br>
- * 
+ *
  * @author Ciaran O'Reilly
  */
 public interface Node {
 
-	/**
-	 * 
-	 * @return the Random Variable this Node is for/on.
-	 */
-	RandomVariable getRandomVariable();
+    /**
+     * @return the Random Variable this Node is for/on.
+     */
+    RandomVariable getRandomVariable();
 
-	/**
-	 * 
-	 * @return true if this Node has no parents.
-	 * 
-	 * @see Node#getParents()
-	 */
-	boolean isRoot();
+    /**
+     * @return true if this Node has no parents.
+     * @see Node#getParents()
+     */
+    boolean isRoot();
 
-	/**
-	 * 
-	 * @return the parent Nodes for this Node.
-	 */
-	Set<Node> getParents();
+    /**
+     * @return the parent Nodes for this Node.
+     */
+    Set<Node> getParents();
 
-	/**
-	 * 
-	 * @return the children Nodes for this Node.
-	 */
-	Set<Node> getChildren();
+    /**
+     * @return the children Nodes for this Node.
+     */
+    Set<Node> getChildren();
 
-	/**
-	 * Get this Node's Markov Blanket:<br>
-	 * 'A node is conditionally independent of all other nodes in the network,
-	 * given its parents, children, and children's parents - that is, given its
-	 * <b>MARKOV BLANKET</b> (AIMA3e pg, 517).
-	 * 
-	 * @return this Node's Markov Blanket.
-	 */
-	Set<Node> getMarkovBlanket();
+    /**
+     * Get this Node's Markov Blanket:<br>
+     * 'A node is conditionally independent of all other nodes in the network,
+     * given its parents, children, and children's parents - that is, given its
+     * <b>MARKOV BLANKET</b> (AIMA3e pg, 517).
+     *
+     * @return this Node's Markov Blanket.
+     */
+    Set<Node> getMarkovBlanket();
 
-	/**
-	 * 
-	 * @return the Conditional Probability Distribution associated with this
-	 *         Node.
-	 */
-	ConditionalProbabilityDistribution getCPD();
+    /**
+     * @return the Conditional Probability Distribution associated with this
+     * Node.
+     */
+    ConditionalProbabilityDistribution getCPD();
+
+
+    void removeParent(Node parent);
+
+    void removeChild(Node child);
+
 }
