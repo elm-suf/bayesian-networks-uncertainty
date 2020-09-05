@@ -2,6 +2,8 @@ package com.github.elmsuf;
 
 import aima.core.probability.RandomVariable;
 import aima.core.probability.bayes.BayesianNetwork;
+import aima.core.probability.bayes.exact.EliminationAsk;
+import aima.core.probability.bayes.exact.EnumerationAsk;
 import aima.core.probability.example.BayesNetExampleFactory;
 import aima.core.probability.proposition.AssignmentProposition;
 import bnparser.BifReader;
@@ -22,8 +24,7 @@ public class App {
         AssignmentProposition[] ass = {new AssignmentProposition(Alarm, Boolean.TRUE)};
 
         q.executeSimpleQuery(vars, ass);
-
-        q.optimizeForQuery(Arrays.asList(vars), Arrays.asList(ass));
+        q.executeQueryWithVariableElimination(new EliminationAsk(), vars, ass);
 
     }
 }
