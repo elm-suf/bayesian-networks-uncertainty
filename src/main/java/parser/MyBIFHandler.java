@@ -1,4 +1,4 @@
-package bnparser;/*
+package parser;/*
  * Encog(tm) Core v3.4 - Java Version
  * http://www.heatonresearch.com/encog/
  * https://github.com/encog/encog-java-core
@@ -32,9 +32,9 @@ import aima.core.probability.domain.ArbitraryTokenDomain;
 import aima.core.probability.domain.BooleanDomain;
 import aima.core.probability.domain.FiniteIntegerDomain;
 import aima.core.probability.util.RandVar;
-import bnparser.bif.BIFDefinition;
-import bnparser.bif.BIFVariable;
-import bnparser.bif.FileSection;
+import parser.bif.BIFDefinition;
+import parser.bif.BIFVariable;
+import parser.bif.FileSection;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;

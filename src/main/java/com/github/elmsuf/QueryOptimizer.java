@@ -9,6 +9,10 @@ import aima.core.probability.bayes.exact.EliminationAsk;
 import aima.core.probability.bayes.exact.EnumerationAsk;
 import aima.core.probability.proposition.AssignmentProposition;
 import aima.core.probability.util.RandVar;
+import org.jgrapht.Graph;
+import org.jgrapht.alg.connectivity.ConnectivityInspector;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DefaultUndirectedGraph;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,22 +55,102 @@ public class QueryOptimizer {
             relevant.addAll(getNode(el).getParents());
             relevant.add(getNode(el));
         });
-        pruneNodes(relevant);
+        keepNodes(relevant);
+    }
+
+
+    public void executeQueryWithVariableElimination1(
+            BayesInference bi,
+            RandomVariable[] queryVars,
+            AssignmentProposition[] evidence) {
+
+        Graph<String, DefaultEdge> graph = this.constructGraph(queryVars, evidence);
+
+        var evidenceList = Arrays.stream(evidence)
+                .map(el -> el.getTermVariable().getName())
+                .collect(Collectors.toList());
+
+        var relevant = new ArrayList<Node>();
+        var irrelevant = new HashSet<Node>();
+
+        for (String e : evidenceList) {
+            relevant.add(getNode(e));
+            graph.removeVertex(e);
+        }
+
+        ConnectivityInspector<String, DefaultEdge> path =
+                new ConnectivityInspector<>(graph);
+
+        for (RandomVariable randVar : this.bn.getVariablesInTopologicalOrder()) {
+            for (var e : queryVars) {
+                if (!evidenceList.contains(randVar.getName())) {
+                    boolean pathExists = path.pathExists(randVar.getName(), e.getName());
+//                    System.out.printf("[%s -> %s] : %b %n", randVar.getName(), e.getName(), pathExists);
+                    if (pathExists) {
+                        relevant.add(getNode(randVar));
+                    } else {
+                        if (!relevant.contains(getNode(randVar)))
+                            irrelevant.add(getNode(randVar));
+                    }
+                }
+            }
+        }
+        System.out.println("***************++" + irrelevant);
+        System.out.println(this.bn.getVariablesInTopologicalOrder());
+        pruneNodes(irrelevant);
+        System.out.println(this.bn.getVariablesInTopologicalOrder());
+
+        long startTime = System.nanoTime();
+        CategoricalDistribution res = bi.ask(queryVars, evidence, bn);
+        long endTime = System.nanoTime();
+        System.out.println(res);
+        System.out.println(bi.getClass().getSimpleName() + " EXEC TOOK: " + (endTime - startTime));
+    }
+
+    private Graph<String, DefaultEdge> constructGraph(RandomVariable[] vars, AssignmentProposition[] evidence) {
+        Graph<String, DefaultEdge> g = new DefaultUndirectedGraph<>(DefaultEdge.class);
+
+        this.bn.getVariablesInTopologicalOrder().forEach(el -> g.addVertex(el.getName()));
+
+        this.bn.getVariablesInTopologicalOrder().stream().map(this::getNode).forEach(node -> {
+            final String curr = node.getRandomVariable().getName();
+            marryParents(g, node.getParents());
+            connectWithNeighbors(g, curr, node.getParents());
+        });
+
+        return g;
+    }
+
+    private void marryParents(Graph<String, DefaultEdge> g, Set<Node> parents) {
+        parents.forEach(parent -> {
+            parents.stream()
+                    .filter(sibling -> sibling.getRandomVariable() != parent.getRandomVariable())
+                    .forEach(el -> g.addEdge(parent.getRandomVariable().getName(), el.getRandomVariable().getName()));
+        });
+    }
+
+    private void connectWithNeighbors(Graph<String, DefaultEdge> g, String curr, Set<Node> neighbors) {
+        neighbors.stream().map(el -> el.getRandomVariable().getName())
+                .forEach(nb -> g.addEdge(curr, nb));
     }
 
 
 
-    private void pruneNodes(Set<Node> relevant) {
+    private void pruneNodes(Set<Node> irelevant) {
+        irelevant.forEach(this.bn::removeNode);
+    }
+    private void keepNodes(Set<Node> relevant) {
         this.bn.getVariablesInTopologicalOrder().stream()
                 .map(this::getNode)
                 .filter(el -> !relevant.contains(el))
                 .forEach(this.bn::removeNode);
     }
 
+
+
     public Node getNode(String node) {
         return this.getNode(this.map.get(node));
     }
-
     public Node getNode(RandomVariable var) {
         return this.bn.getNode(var);
     }

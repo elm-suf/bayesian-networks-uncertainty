@@ -1,4 +1,4 @@
-package bnparser;/*
+package parser;/*
  * Encog(tm) Core v3.4 - Java Version
  * http://www.heatonresearch.com/encog/
  * https://github.com/encog/encog-java-core

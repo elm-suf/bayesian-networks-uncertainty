@@ -21,9 +21,9 @@
  * and trademarks visit:
  * http://www.heatonresearch.com/copyright
  */
-package bnparser.bif;
+package parser.bif;
 
-import bnparser.csv.CSVFormat;
+import parser.csv.CSVFormat;
 
 import java.util.ArrayList;
 import java.util.List;

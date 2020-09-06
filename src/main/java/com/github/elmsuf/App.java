@@ -6,7 +6,6 @@ import aima.core.probability.bayes.exact.EliminationAsk;
 import aima.core.probability.bayes.exact.EnumerationAsk;
 import aima.core.probability.example.BayesNetExampleFactory;
 import aima.core.probability.proposition.AssignmentProposition;
-import bnparser.BifReader;
 
 import java.util.Arrays;
 
@@ -23,8 +22,9 @@ public class App {
         var Alarm = q.getNode("Alarm").getRandomVariable();
         AssignmentProposition[] ass = {new AssignmentProposition(Alarm, Boolean.TRUE)};
 
-        q.executeSimpleQuery(vars, ass);
-        q.executeQueryWithVariableElimination(new EliminationAsk(), vars, ass);
+//        q.executeSimpleQuery(vars, ass);
+//        q.executeQueryWithVariableElimination(new EliminationAsk(), vars, ass);
+        q.executeQueryWithVariableElimination1(new EliminationAsk(), vars, ass);
 
     }
 }

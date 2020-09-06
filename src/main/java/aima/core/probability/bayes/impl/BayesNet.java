@@ -62,7 +62,7 @@ public class BayesNet implements BayesianNetwork {
     @Override
     public boolean removeNode(Node node) {
         RandomVariable var = node.getRandomVariable();
-        System.out.println(node);
+        System.out.println("REM " + node);
 //        System.out.println("variables");
 //        System.out.println(variables);
         this.variables = this.variables.stream().filter(rand -> !rand.equals(var)).collect(Collectors.toList());
@@ -75,12 +75,13 @@ public class BayesNet implements BayesianNetwork {
         return true;
     }
 
-    private void removeChild(Node child, Node node) {
-        child.removeParent(node);
-        this.varToNodeMap.replace(child.getRandomVariable(), child);
+    private void removeChild(Node parent, Node node) {
+        parent.removeChild(node);
+        this.varToNodeMap.replace(parent.getRandomVariable(), parent);
     }
 
     private void removeParent(Node child, Node node) {
+//        System.out.println("REM_Parent " + node + " from " + child);
         child.removeParent(node);
         this.varToNodeMap.replace(child.getRandomVariable(), child);
     }
